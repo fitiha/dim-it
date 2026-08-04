@@ -3,12 +3,15 @@ package com.screendimmer
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.graphics.PixelFormat
+import android.graphics.Rect
 import android.os.Build
 import android.os.IBinder
 import android.view.Gravity
+import android.view.View
 import android.view.WindowManager
 
 class DimmerService : Service() {
@@ -40,7 +43,14 @@ class DimmerService : Service() {
             ACTION_UPDATE -> {
                 val level = intent.getIntExtra(EXTRA_DIM_LEVEL, prefs.dimLevel)
                 updateDimLevel(level)
-                updateNotification(level)
+            }
+            ACTION_DIM_MINUS -> {
+                val newLevel = (prefs.dimLevel - 10).coerceIn(0, 100)
+                updateDimLevel(newLevel)
+            }
+            ACTION_DIM_PLUS -> {
+                val newLevel = (prefs.dimLevel + 10).coerceIn(0, 100)
+                updateDimLevel(newLevel)
             }
         }
         return START_NOT_STICKY
@@ -72,6 +82,13 @@ class DimmerService : Service() {
         }
 
         windowManager?.addView(overlay, params)
+
+        overlay?.post {
+            val statusBarHeight = getStatusBarHeight()
+            val navBarHeight = getNavBarHeight()
+            overlay?.setSystemBars(statusBarHeight, navBarHeight)
+        }
+
         prefs.isActive = true
     }
 
@@ -86,6 +103,17 @@ class DimmerService : Service() {
     private fun updateDimLevel(level: Int) {
         overlay?.setDimLevel(level)
         prefs.dimLevel = level
+        updateNotification(level)
+    }
+
+    private fun getStatusBarHeight(): Int {
+        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+        return if (resourceId > 0) resources.getDimensionPixelSize(resourceId) else 0
+    }
+
+    private fun getNavBarHeight(): Int {
+        val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+        return if (resourceId > 0) resources.getDimensionPixelSize(resourceId) else 0
     }
 
     private fun createNotificationChannel() {
@@ -102,11 +130,48 @@ class DimmerService : Service() {
     }
 
     private fun createNotification(level: Int): Notification {
+        val minusIntent = Intent(this, DimmerService::class.java).apply {
+            action = ACTION_DIM_MINUS
+        }
+        val minusPending = PendingIntent.getService(
+            this, 0, minusIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val plusIntent = Intent(this, DimmerService::class.java).apply {
+            action = ACTION_DIM_PLUS
+        }
+        val plusPending = PendingIntent.getService(
+            this, 1, plusIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val openAppIntent = Intent(this, MainActivity::class.java)
+        val openAppPending = PendingIntent.getActivity(
+            this, 2, openAppIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         return Notification.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.notification_title))
             .setContentText(getString(R.string.notification_text, level))
             .setSmallIcon(R.drawable.ic_qs_dimmer)
             .setOngoing(true)
+            .setContentIntent(openAppPending)
+            .addAction(
+                Notification.Action.Builder(
+                    null,
+                    getString(R.string.action_dim_minus),
+                    minusPending
+                ).build()
+            )
+            .addAction(
+                Notification.Action.Builder(
+                    null,
+                    getString(R.string.action_dim_plus),
+                    plusPending
+                ).build()
+            )
             .build()
     }
 
@@ -124,6 +189,8 @@ class DimmerService : Service() {
         const val ACTION_SHOW = "com.screendimmer.SHOW"
         const val ACTION_HIDE = "com.screendimmer.HIDE"
         const val ACTION_UPDATE = "com.screendimmer.UPDATE"
+        const val ACTION_DIM_MINUS = "com.screendimmer.DIM_MINUS"
+        const val ACTION_DIM_PLUS = "com.screendimmer.DIM_PLUS"
         const val EXTRA_DIM_LEVEL = "dim_level"
         private const val CHANNEL_ID = "dimmer_channel"
         private const val NOTIFICATION_ID = 1

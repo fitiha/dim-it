@@ -51,6 +51,11 @@ adb install app/build/outputs/apk/debug/app-debug.apk
 2. Set your preferred dim level with the slider
 3. Swipe down notification shade → tap the **Dimmer** tile to toggle
 
+## Limitations
+
+- **Notification shade is not dimmed** — Android's notification/Quick Settings panel is a system window that sits above app overlays. This is a platform limitation; only accessibility or root permissions could override it (which defeats the privacy purpose).
+- **Status bar and navigation bar are excluded** — the overlay only dims the app content area, not system UI elements.
+
 ## License
 
 MIT

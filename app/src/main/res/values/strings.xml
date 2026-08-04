@@ -15,4 +15,6 @@
     <string name="toast_dimmer_on">Dimmer enabled</string>
     <string name="toast_dimmer_off">Dimmer disabled</string>
     <string name="toast_permission_needed">Overlay permission required</string>
+    <string name="action_dim_minus">- 10%</string>
+    <string name="action_dim_plus">+ 10%</string>
 </resources>
