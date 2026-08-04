@@ -62,14 +62,9 @@ class DimmerService : Service() {
 
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
-        val statusBarHeight = getStatusBarHeight()
-        val navBarHeight = getNavBarHeight()
-        val displayMetrics = resources.displayMetrics
-        val screenHeight = displayMetrics.heightPixels
-
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
-            screenHeight - statusBarHeight - navBarHeight,
+            WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -77,7 +72,7 @@ class DimmerService : Service() {
         ).apply {
             gravity = Gravity.TOP or Gravity.START
             x = 0
-            y = statusBarHeight
+            y = 0
         }
 
         overlay = DimmerOverlay(this).apply {
@@ -85,6 +80,11 @@ class DimmerService : Service() {
         }
 
         windowManager?.addView(overlay, params)
+
+        overlay?.post {
+            overlay?.setSystemBars(getStatusBarHeight(), getNavBarHeight())
+        }
+
         prefs.isActive = true
     }
 
