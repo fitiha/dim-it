@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Screen Dimmer</string>
+    <string name="tile_label">Dimmer</string>
+    <string name="tile_subtitle_active">Active: %1$d%%</string>
+    <string name="tile_subtitle_inactive">Tap to activate</string>
+    <string name="level_text">%1$d%%</string>
+    <string name="button_start">Start Dimming</string>
+    <string name="button_stop">Stop Dimming</string>
+    <string name="instructions">Use Quick Settings tile to toggle dimmer quickly</string>
+    <string name="notification_channel_name">Dimmer Service</string>
+    <string name="notification_channel_description">Shows when screen dimmer is active</string>
+    <string name="notification_title">Screen Dimmer Active</string>
+    <string name="notification_text">Dimming at %1$d%%</string>
+    <string name="toast_dimmer_on">Dimmer enabled</string>
+    <string name="toast_dimmer_off">Dimmer disabled</string>
+    <string name="toast_permission_needed">Overlay permission required</string>
+</resources>
