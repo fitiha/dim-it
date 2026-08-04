@@ -7,11 +7,9 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.graphics.PixelFormat
-import android.graphics.Rect
 import android.os.Build
 import android.os.IBinder
 import android.view.Gravity
-import android.view.View
 import android.view.WindowManager
 
 class DimmerService : Service() {
@@ -64,9 +62,14 @@ class DimmerService : Service() {
 
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
+        val statusBarHeight = getStatusBarHeight()
+        val navBarHeight = getNavBarHeight()
+        val displayMetrics = resources.displayMetrics
+        val screenHeight = displayMetrics.heightPixels
+
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
+            screenHeight - statusBarHeight - navBarHeight,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -74,7 +77,7 @@ class DimmerService : Service() {
         ).apply {
             gravity = Gravity.TOP or Gravity.START
             x = 0
-            y = 0
+            y = statusBarHeight
         }
 
         overlay = DimmerOverlay(this).apply {
@@ -82,13 +85,6 @@ class DimmerService : Service() {
         }
 
         windowManager?.addView(overlay, params)
-
-        overlay?.post {
-            val statusBarHeight = getStatusBarHeight()
-            val navBarHeight = getNavBarHeight()
-            overlay?.setSystemBars(statusBarHeight, navBarHeight)
-        }
-
         prefs.isActive = true
     }
 
